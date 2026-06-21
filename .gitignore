@@ -1,0 +1,22 @@
+# API Keys and credentials
+api_key.txt
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary and local text files
+ids.txt
+status.txt
+
+# Local environments and IDEs
+.vscode/
+
+# Large CSV and result files
+*.csv
+resultados/
+
+# Other local repositories/folders
+testes-automatizados/
+software-teste/

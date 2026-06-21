@@ -39,6 +39,11 @@ PR_TITLES = {
 }
 
 
+class CopilotTimeoutError(Exception):
+    """Exceção lançada quando a revisão do Copilot atinge o timeout de polling."""
+    pass
+
+
 def run_command(command, cwd=REPO_PATH, ignore_errors=False):
     result = subprocess.run(command, capture_output=True, text=True, cwd=cwd)
     if result.returncode != 0:
@@ -219,6 +224,9 @@ def collect_and_save(pr_id, cenario_id=None, code_type=None, prompt_type=None,
                     run_command(["gh", "pr", "edit", str(pr_id), "--title", full_title])
                 break
 
+    if review_text == "TIMEOUT_ERROR":
+        raise CopilotTimeoutError("Tempo limite esgotado aguardando resposta do Copilot (possível cota/limite atingido).")
+
     with open(RESULTADOS_CSV, mode="a", encoding="utf-8", newline="") as file:
         csv.writer(file).writerow([cenario_id, code_type, prompt_type, execucao, review_text, elapsed])
     print(f"Resultado salvo! PR #{pr_id} | Execução: {execucao} | Tempo: {elapsed}s")
@@ -261,6 +269,31 @@ def validate_scenario_files(cenario_id, code_type, prompt_type):
         errors.append(f"Prompt não encontrado: {prompt_path}")
     return errors
 
+def is_already_completed(cid, c_type, p_type, execucao):
+    """Verifica se a combinação já existe no CSV de resultados e não falhou por TIMEOUT_ERROR."""
+    if not os.path.exists(RESULTADOS_CSV):
+        return False
+    try:
+        with open(RESULTADOS_CSV, mode="r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                csv_cid = row.get("ID_Cenario", "").strip().zfill(2)
+                tgt_cid = str(cid).strip().zfill(2)
+                csv_c_type = row.get("Tipo_Codigo", "").strip()
+                csv_p_type = row.get("Tipo_Prompt", "").strip()
+                csv_exec = row.get("Execucao", "").strip()
+                csv_review = row.get("Review_Copilot", "").strip()
+                
+                if (csv_cid == tgt_cid and 
+                    csv_c_type == c_type and 
+                    csv_p_type == p_type and 
+                    csv_exec == str(execucao) and
+                    csv_review != "TIMEOUT_ERROR"):
+                    return True
+    except Exception as e:
+        print(f"Erro ao ler CSV de progresso: {e}")
+    return False
+
 
 def run_batch(cenarios, prompts, codigos):
     """Executa uma bateria de testes com NUM_EXECUCOES repetições por combinação."""
@@ -277,9 +310,14 @@ def run_batch(cenarios, prompts, codigos):
                     continue
 
                 for execucao in range(1, NUM_EXECUCOES + 1):
+                    if is_already_completed(cid, c_type, p_type, execucao):
+                        print(f"[SKIP] Cenário {cid} / {p_type} / {c_type} exec {execucao} já concluído no CSV.")
+                        continue
+
                     print(f"\n{'='*60}")
                     print(f"Cenário: ID-{cid} | Prompt: {p_type} | Código: {c_type} | Execução: {execucao}/{NUM_EXECUCOES}")
                     print(f"{'='*60}")
+                    pr_id, branch = None, None
                     try:
                         prepare_main_with_prompt(p_type)
                         branch = inject_scenario(cid, c_type, p_type, execucao)
@@ -288,13 +326,18 @@ def run_batch(cenarios, prompts, codigos):
                             collect_and_save(pr_id, cid, c_type, p_type,
                                              start_time=start_time, execucao=execucao)
                             teardown_iteration(pr_id, branch)
+                    except CopilotTimeoutError as e:
+                        print(f"\n[!] ABORTANDO BATERIA: {e}")
+                        if pr_id and branch:
+                            teardown_iteration(pr_id, branch)
+                        raise e
                     except Exception as e:
                         print(f"FALHA na iteração {cid} exec {execucao}: {e}")
                         run_command(["git", "checkout", "main"])
 
 
 def main():
-    global NUM_EXECUCOES
+    global NUM_EXECUCOES, RESULTADOS_CSV
     available = list_available_scenarios()
     print("=== ENGINE DE AUTOMAÇÃO IC ===")
     print(f"Cenários disponíveis: {', '.join(available) if available else 'nenhum'}")
@@ -304,6 +347,7 @@ def main():
     print("[2] Re-coleta por ID de PR")
     print("[3] Cenário individual (manual)")
     print("[4] Bateria personalizada")
+    print("[5] Executar MVP (Todos os cenários disponíveis, 1x cada)")
     choice = input("Opção: ")
 
     # Inicializa o CSV com header se não existir
@@ -353,6 +397,19 @@ def main():
         if input("Confirmar? (s/n): ").strip().lower() != "s":
             return
         run_batch(cenarios, prompts, codigos)
+
+    elif choice == "5":
+        NUM_EXECUCOES = 1
+        RESULTADOS_CSV = os.path.join(SCRIPT_DIR, "rodada_mvp.csv")
+        if not os.path.exists(RESULTADOS_CSV):
+            with open(RESULTADOS_CSV, mode="w", encoding="utf-8", newline="") as f:
+                csv.writer(f).writerow([
+                    "ID_Cenario", "Tipo_Codigo", "Tipo_Prompt",
+                    "Execucao", "Review_Copilot", "Tempo_Resposta_Segundos"
+                ])
+        total = len(available) * 2 * 2 * NUM_EXECUCOES
+        print(f"\nIniciando MVP: Todos os cenários × simples/avancado × biased/clean × 1 execução = {total} execuções.")
+        run_batch(available, ['simples', 'avancado'], ['biased', 'clean'])
 
     else:
         print("Opção inválida.")
