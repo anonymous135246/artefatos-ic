@@ -21,7 +21,7 @@ API_KEY_FILE = os.path.join(SCRIPT_DIR, "api_key.txt")
 MODELO = "llama-3.3-70b-versatile"
 
 # Limites do free tier do Groq para esse modelo
-GROQ_RPD_LIMIT = 60    # requests per day (limite oficial)
+GROQ_RPD_LIMIT = 1000    # requests per day (limite oficial)
 GROQ_RPM_LIMIT = 30      # requests per minute
 
 # Sleep dinâmico:
