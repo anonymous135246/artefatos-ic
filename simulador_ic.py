@@ -14,7 +14,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals
 DATASET_PATH = os.path.join(SCRIPT_DIR, "dataset")
 SCENARIOS_ROOT = os.path.join(DATASET_PATH, "cenarios")
 PROMPTS_PATH = os.path.join(DATASET_PATH, "prompts")
-RESULTADOS_CSV = os.path.join(SCRIPT_DIR, "rodada_principal2.csv")
+RESULTADOS_CSV = os.path.join(SCRIPT_DIR, "rodada_teste3.csv")
 API_KEY_FILE = os.path.join(SCRIPT_DIR, "api_key.txt")
 
 # Modelo usado na simulação
