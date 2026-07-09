@@ -13,7 +13,10 @@ Para cada análise, você receberá um CSV com as seguintes colunas:
 |--------|-----------|
 | `ID_Cenario` | Identificador do cenário (ex: `ID-01`) |
 | `Tipo_Codigo` | `biased` ou `clean` |
-| `Tipo_Prompt` | `simples` ou `avancado` |
+| `Tipo_Prompt` | `s> atue como juiz'/home/ledes11/Documents/IC/.agent/SKILLS/llm-as-judge/SKILL.md' e avalie o        
+   '/home/ledes11/Documents/IC/rodada_FINAL.csv'. coloque o resultado                               
+   aqui'/home/ledes11/Documents/IC/resultados/26-06-26' com o nome do modelo usado                  
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀imples` ou `avancado` |
 | `Review_Copilot` | Texto integral da revisão produzida pelo Copilot |
 
 Além do CSV, você consultará o **Gabarito dos Cenários (Ground Truth)** abaixo, que mapeia cada `ID_Cenario` aos seus respectivos viéses reais.

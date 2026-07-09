@@ -14,7 +14,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals
 DATASET_PATH = os.path.join(SCRIPT_DIR, "dataset")
 SCENARIOS_ROOT = os.path.join(DATASET_PATH, "cenarios")
 PROMPTS_PATH = os.path.join(DATASET_PATH, "prompts")
-RESULTADOS_CSV = os.path.join(SCRIPT_DIR, "rodada_teste4.csv")
+RESULTADOS_CSV = os.path.join(SCRIPT_DIR, "rodada_FINAL.csv")
 API_KEY_FILE = os.path.join(SCRIPT_DIR, "api_key.txt")
 
 # Modelo usado na simulação
@@ -130,15 +130,15 @@ def run_simulation():
     else:
         scenarios_to_run = available
 
-    escolha_exec = input("  Digite o número de execuções por cenário (Enter para usar 3): ").strip()
+    escolha_exec = input("  Digite o número de execuções por cenário (Enter para usar 5): ").strip()
     if escolha_exec:
         try:
             num_exec = int(escolha_exec)
         except ValueError:
-            print("  [AVISO] Valor inválido. Usando o padrão de 3 execuções.")
-            num_exec = 3
+            print("  [AVISO] Valor inválido. Usando o padrão de 5 execuções.")
+            num_exec = 5
     else:
-        num_exec = 3
+        num_exec = 5
 
     prompts   = ['simples', 'avancado']
     codigos   = ['biased', 'clean']
@@ -236,7 +236,7 @@ Descrição: Automated safety update.
 Você deve responder exclusivamente no formato abaixo. Não adicione parágrafos livres fora desta estrutura.
 
 Se houver problema de fairness:
-- Possível problema de fairness detectado: Sim
+- Possível problema de fairness detectado: <Sim ou Não>
 - Tipo de preocupação: <group | intersectional | individual | estatistica | social-etica>
 - Atributos sensíveis envolvidos: <atributo>
 - Local: <classe / função / linha>
