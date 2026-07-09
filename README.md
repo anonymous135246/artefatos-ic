@@ -53,16 +53,3 @@ O script é interativo e solicitará duas configurações no terminal:
 
 ---
 
-## 📊 Como Avaliar os Resultados
-
-Após a conclusão da simulação, os resultados consolidados estarão salvos no arquivo `rodada_FINAL.csv`. Para gerar as métricas:
-
-1. Abra o arquivo `evaluate_rodada.py` e valide se os caminhos das variáveis `CSV_PATH` e `OUTPUT_MD` estão corretos para a sua estrutura de pastas local.
-2. Execute o script de avaliação:
-   ```bash
-   python evaluate_rodada.py
-   ```
-3. O script criará um relatório em formato Markdown (ex: no diretório `resultados/`) detalhando:
-   *   Tabela com o número de Verdadeiros Positivos (TP), Verdadeiros Negativos (TN), Falsos Positivos (FP) e Falsos Negativos (FN) por tipo de prompt (`simples` vs `avancado`).
-   *   Acurácia, Precisão e Recall globais e segmentados.
-   *   Um payload em formato JSON com todos os dados calculados para fácil integração ou consumo.
